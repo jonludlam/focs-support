@@ -3,25 +3,25 @@ type t = Lf | Br of int * t * t
 let printer (x : t) =
   let filename,oc = Filename.open_temp_file "tree" ".dot" in
   Printf.fprintf oc "digraph D {\n";
-  let rec dump_nodes = function
-    | Lf -> ()
+  let rec dump_nodes n = function
+    | Lf -> Printf.fprintf oc "  Lf%d [label=\"Lf\"]\n" n
     | Br (x,t1,t2) ->
-        Printf.fprintf oc "  %d\n" x;
-        dump_nodes t1; 
-        dump_nodes t2
+      Printf.fprintf oc "  Br%d [label=%d]\n" n x;
+        dump_nodes (2*n+1) t1; 
+        dump_nodes (2*n+2) t2
   in
-  dump_nodes x;
+  dump_nodes 0 x;
   let dump_edges t =
-    let rec inner from = function
-    | Lf -> ()
+    let rec inner n1 n2 = function
+    | Lf -> Printf.fprintf oc "  Br%d -> Lf%d\n" n1 n2
     | Br (x,t1,t2) ->
-        Printf.fprintf oc "  %d -> %d\n" from x;
-        inner x t1;
-        inner x t2
+        Printf.fprintf oc "  Br%d -> Br%d\n" n1 n2;
+        inner n2 (2*n2+1) t1;
+        inner n2 (2*n2+2) t2
     in
     match t with
     | Lf -> ()
-    | Br (x,t1,t2) -> inner x t1; inner x t2
+    | Br (x,t1,t2) -> inner 0 1 t1; inner 0 2 t2
   in
   dump_edges x;
   Printf.fprintf oc "}\n";
