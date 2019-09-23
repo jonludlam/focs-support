@@ -1,5 +1,5 @@
 (library
- (public_name focs_support)
+ (public_name focs)
  (libraries jupyter.notebook))
 
 
