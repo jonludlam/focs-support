@@ -35,5 +35,12 @@ let printer (str_of_alpha : 'a -> string) (x : 'a t) =
   close_in ic;
   let base64=false in
   let mime="image/svg+xml" in
-  ignore (Jupyter_notebook.display ~base64 mime data)
+  ignore (Jupyter_notebook.display ~base64 mime data);
+  let rec to_text = function
+    | Lf -> "Lf"
+    | Br(x,l,r) -> Printf.sprintf "Br(%s,%s,%s)" (str_of_alpha x) (to_text l) (to_text r)
+  in
+  let text = to_text x in
+  ignore (Jupyter_notebook.display "text/plain" text)
+
 
