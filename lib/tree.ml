@@ -1,5 +1,9 @@
 type 'a t = Lf | Br of 'a * 'a t * 'a t
 
+let rec string_of (str_of_alpha : 'a -> string) : 'a t -> string = function
+    | Lf -> "Lf"
+    | Br(x,l,r) -> Printf.sprintf "Br(%s,%s,%s)" (str_of_alpha x) (string_of str_of_alpha l) (string_of str_of_alpha r)
+
 let printer (str_of_alpha : 'a -> string) (x : 'a t) =
   let filename,oc = Filename.open_temp_file "tree" ".dot" in
   Printf.fprintf oc "digraph D {\n";
@@ -36,11 +40,7 @@ let printer (str_of_alpha : 'a -> string) (x : 'a t) =
   let base64=false in
   let mime="image/svg+xml" in
   ignore (Jupyter_notebook.display ~base64 mime data);
-  let rec to_text = function
-    | Lf -> "Lf"
-    | Br(x,l,r) -> Printf.sprintf "Br(%s,%s,%s)" (str_of_alpha x) (to_text l) (to_text r)
-  in
-  let text = to_text x in
+  let text = string_of str_of_alpha x in
   ignore (Jupyter_notebook.display "text/plain" text)
 
 
