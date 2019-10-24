@@ -43,4 +43,8 @@ let printer (str_of_alpha : 'a -> string) (x : 'a t) =
   let text = string_of str_of_alpha x in
   ignore (Jupyter_notebook.display "text/plain" text)
 
+let rec preorder = function
+  | Lf -> []
+  | Br(x,l,r) -> x :: preorder l @ preorder r
+
 
