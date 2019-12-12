@@ -1,4 +1,4 @@
 (install
- (files pattern-reference.ppm)
+ (files pattern-reference.ppm gradient.ppm)
  (section share)
  (package focs))
