@@ -1,0 +1,4 @@
+(install
+ (files pattern-reference.ppm)
+ (section share)
+ (package focs))
