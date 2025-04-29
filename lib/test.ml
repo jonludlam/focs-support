@@ -4,6 +4,7 @@ type _ t =
   | Int : int t
   | Float : float -> float t
   | String : string t
+  | Bool : bool t
   | Pair : 'a t * 'b t -> ('a * 'b) t
   | List : 'a t -> 'a list t
   | Abstract : 'a abstract -> 'a t
@@ -11,6 +12,7 @@ type _ t =
 let int = Int
 let float epsilon = Float epsilon
 let string = String
+let bool = Bool
 let pair (x, y) = Pair (x, y)
 let list l = List l
 let abstract abs = Abstract abs
@@ -23,6 +25,7 @@ let rec eq : type a. a t -> a -> a -> bool =
       let delta = Float.abs (x -. y) in
       delta < epsilon
   | String -> String.equal x y
+  | Bool -> Bool.equal x y
   | Pair (t1, t2) ->
       let x1, x2 = x and y1, y2 = y in
       eq t1 x1 y1 && eq t2 x2 y2
@@ -35,6 +38,7 @@ let rec to_string : type a. a t -> a -> string =
   | Int -> string_of_int x
   | Float _ -> string_of_float x
   | String -> x
+  | Bool -> string_of_bool x
   | Pair (t1, t2) ->
       let x1, x2 = x in
       Printf.sprintf "(%s,%s)" (to_string t1 x1) (to_string t2 x2)
