@@ -43,9 +43,26 @@ let rec to_string : type a. a t -> a -> string =
   | Abstract abs -> Format.asprintf "%a" abs.pp x
 
 let buf = Buffer.create 1000
+let failure_detected = ref false
 
 let test name ty x y =
   if eq ty x y then Printf.bprintf buf "%s: OK\n" name
-  else
-    Printf.bprintf buf "%s: Failed\n  Expecting: %s\n  Got      : %s\n" name
-      (to_string ty x) (to_string ty y)
+  else 
+    ( failure_detected := true;
+      Printf.bprintf buf "%s: Failed\n  Expecting: %s\n  Got      : %s\n" name
+        (to_string ty x) (to_string ty y))
+
+exception Tests_failed
+
+let run fn =
+  Buffer.clear buf;
+  failure_detected := false;
+  (try
+    fn ();
+   with e ->
+    failure_detected := true;
+    Printf.bprintf buf "Exception raised during test: %s\n" (Printexc.to_string e);
+    ());
+  let _ = Jupyter_notebook.display "text/plain" (Buffer.contents buf) in
+  if !failure_detected then raise Tests_failed
+
