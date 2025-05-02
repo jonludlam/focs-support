@@ -71,6 +71,6 @@ let run fn =
   failure_detected := false;
   fn ();
   let _ = Jupyter_notebook.display "text/plain" (Buffer.contents buf) in
-  if !failure_detected then (let (test,expected,observed) = Option.get !first_failure in raise (Tests_failed (Printf.sprintf "%s: Expecting %s, got %s" test expected observed)))
+  if !failure_detected then (let (test,expected,observed) = Option.get !first_failure in raise (Tests_failed (Printf.sprintf "%s:\nExpecting %s\nGot %s" test expected observed)))
 
 
