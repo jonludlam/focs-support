@@ -48,25 +48,28 @@ let rec to_string : type a. a t -> a -> string =
 
 let buf = Buffer.create 1000
 let failure_detected = ref false
+let first_failure = ref None
 
 let test name ty x y =
-  if eq ty x y then Printf.bprintf buf "%s: OK\n" name
-  else 
-    ( failure_detected := true;
-      Printf.bprintf buf "%s: Failed\n  Expecting: %s\n  Got      : %s\n" name
-        (to_string ty x) (to_string ty y))
-
-exception Tests_failed
+  try
+    if eq ty x y then Printf.bprintf buf "%s: OK\n" name
+    else 
+      ( failure_detected := true;
+        (match !first_failure with | None -> first_failure := Some name | _ -> ());
+        Printf.bprintf buf "%s: Failed\n  Expecting: %s\n  Got      : %s\n" name
+          (to_string ty x) (to_string ty y))
+  with e ->
+    failure_detected := true;
+    (match !first_failure with | None -> first_failure := Some name | _ -> ());
+    Printf.bprintf buf "Exception raised during test: %s\n" (Printexc.to_string e);
+    ()
+   
+exception Tests_failed of string
 
 let run fn =
   Buffer.clear buf;
   failure_detected := false;
-  (try
-    fn ();
-   with e ->
-    failure_detected := true;
-    Printf.bprintf buf "Exception raised during test: %s\n" (Printexc.to_string e);
-    ());
+  fn ();
   let _ = Jupyter_notebook.display "text/plain" (Buffer.contents buf) in
-  if !failure_detected then raise Tests_failed
+  if !failure_detected then (let test = Option.get !first_failure in raise (Tests_failed test))
 
