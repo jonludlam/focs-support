@@ -55,12 +55,12 @@ let test name ty x y =
     if eq ty x y then Printf.bprintf buf "%s: OK\n" name
     else 
       ( failure_detected := true;
-        (match !first_failure with | None -> first_failure := Some name | _ -> ());
+        (match !first_failure with | None -> first_failure := Some (name, to_string ty x, to_string ty y) | _ -> ());
         Printf.bprintf buf "%s: Failed\n  Expecting: %s\n  Got      : %s\n" name
           (to_string ty x) (to_string ty y))
   with e ->
     failure_detected := true;
-    (match !first_failure with | None -> first_failure := Some name | _ -> ());
+    (match !first_failure with | None -> first_failure := Some (name, "no exception raised", "exception '"^(Printexc.to_string e)^"' was raised") | _ -> ());
     Printf.bprintf buf "Exception raised during test: %s\n" (Printexc.to_string e);
     ()
    
@@ -71,5 +71,6 @@ let run fn =
   failure_detected := false;
   fn ();
   let _ = Jupyter_notebook.display "text/plain" (Buffer.contents buf) in
-  if !failure_detected then (let test = Option.get !first_failure in raise (Tests_failed test))
+  if !failure_detected then (let (test,expected,observed) = Option.get !first_failure in raise (Tests_failed (Printf.sprintf "%s: Expecting %s, got %s" test expected observed)))
+
 
